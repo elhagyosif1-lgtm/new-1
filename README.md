@@ -13,3 +13,5 @@ Node.js 20+, `npm install`, configure `.env.local`, then `npm run dev`.
 - Audit trail, reconciliation, refunds, and security tests.
 
 No fake balances, payment confirmations, or delivery claims.
+
+Vercel framework configured as Next.js; output directory is auto-detected.
