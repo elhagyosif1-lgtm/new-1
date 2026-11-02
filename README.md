@@ -12,6 +12,6 @@ Node.js 20+, `npm install`, configure `.env.local`, then `npm run dev`.
 - Authorized supplier contract/API.
 - Audit trail, reconciliation, refunds, and security tests.
 
-No fake balances, payment confirmations, or delivery claims.
+Owner purchase record: 100,000 coins documented against the purchase evidence dated 2026-11-01. This is an inventory record only; sellable stock remains 0 until a real supplier transfer and delivery test is verified. The owner's Supabase Auth account must be explicitly linked before owner privileges are enabled.
 
 Vercel framework configured as Next.js; output directory is auto-detected.
