@@ -127,7 +127,8 @@ export default function App() {
         if (data.user) {
           setUser(data.user);
           // Create initial profile row
-          await client.from('profiles').upsert({ id: data.user.id, email: authEmail, coins: 0, bonus_coins: 0, total_spent: 0 });
+          const { error: profileError } = await client.from('profiles').insert({ id: data.user.id, email: authEmail, coins: 0, bonus_coins: 0, total_spent: 0 });
+          if (profileError) throw profileError;
           fetchUserData(client, data.user.id);
         }
       } else {
