@@ -1,0 +1,6 @@
+{
+  "name": "TikTok Coin Center Pro",
+  "description": "Professional TikTok Coin Purchasing & Balance Management Platform with Secure Supabase Integration and CORS-Safe API Endpoints.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
