@@ -4,9 +4,9 @@ import { createClient } from '@/utils/supabase/server';
 
 export default async function AccountPage() {
   const supabase = await createClient();
-  const { data: claims, error } = await supabase.auth.getClaims();
-  if (error || !claims) redirect('/login?next=%2Faccount');
-  const email = typeof claims.email === 'string' ? claims.email : 'حسابك';
+  const { data, error } = await supabase.auth.getClaims();
+  if (error || !data?.claims) redirect('/login?next=%2Faccount');
+  const email = typeof data.claims.email === 'string' ? data.claims.email : 'حسابك';
 
   return (
     <main className="site-shell" style={{ minHeight: '100dvh', padding: 24 }}>
