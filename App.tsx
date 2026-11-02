@@ -32,8 +32,8 @@ export default function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
 
   // Supabase Configuration
-  const [supabaseUrl, setSupabaseUrl] = useState(localStorage.getItem('sb_url') || '');
-  const [supabaseKey, setSupabaseKey] = useState(localStorage.getItem('sb_key') || '');
+  const [supabaseUrl, setSupabaseUrl] = useState(import.meta.env.VITE_SUPABASE_URL || localStorage.getItem('sb_url') || '');
+  const [supabaseKey, setSupabaseKey] = useState(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || localStorage.getItem('sb_key') || '');
   const [client, setClient] = useState<any>(null);
 
   // Auth state
@@ -50,8 +50,8 @@ export default function App() {
   const [loadingData, setLoadingData] = useState(false);
 
   // Supplier & Order dispatch state
-  const [supplierApiUrl, setSupplierApiUrl] = useState(localStorage.getItem('supplier_url') || 'https://api.tiktok-supplier-fulfillment.com/v1/orders');
-  const [supplierApiKey, setSupplierApiKey] = useState(localStorage.getItem('supplier_key') || 'supp_live_9988776655');
+  const [supplierApiUrl, setSupplierApiUrl] = useState('');
+  const [supplierApiKey, setSupplierApiKey] = useState('');
   const [dispatchStatus, setDispatchStatus] = useState<any>(null);
 
   // Checkout modal
@@ -127,7 +127,7 @@ export default function App() {
         if (data.user) {
           setUser(data.user);
           // Create initial profile row
-          await client.from('profiles').upsert({ id: data.user.id, email: authEmail, coins: 50, bonus_coins: 10 });
+          await client.from('profiles').upsert({ id: data.user.id, email: authEmail, coins: 0, bonus_coins: 0, total_spent: 0 });
           fetchUserData(client, data.user.id);
         }
       } else {
@@ -185,18 +185,17 @@ export default function App() {
   };
 
   // Real purchase & Supplier fulfillment dispatch
+  const handlePurchase = async (e: React.FormEvent) =  // Create a pending payment request only. Never credit a wallet from a client-side receipt reference.
   const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPkg || !receiptRef) return;
+    if (!selectedPkg || !receiptRef.trim()) return;
     if (!user || !client) {
-      alert(lang === 'ar' ? 'الرجاء تسجيل الدخول أولاً لإتمام طلب الشحن.' : 'Please log in first to complete your purchase.');
+      alert(lang === 'ar' ? 'سجّل الدخول أولاً.' : 'Please sign in first.');
       return;
     }
-
     setCheckoutLoading(true);
     try {
-      const totalCoinsToAdd = selectedPkg.coins + selectedPkg.bonus;
-      const newTxData = {
+      const request = {
         user_id: user.id,
         username: user.email,
         coins: selectedPkg.coins,
@@ -205,74 +204,28 @@ export default function App() {
         currency: 'EGP',
         amount_local: selectedPkg.price_egp,
         payment_method: paymentMethod,
-        receipt_ref: receiptRef,
-        proof_image: proofImage || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
-        status: 'verified_and_dispatched',
-        supplier_status: 'sent_to_supplier'
+        receipt_ref: receiptRef.trim(),
+        proof_image: proofImage || null,
+        status: 'pending_review',
+        supplier_status: 'not_dispatched'
       };
-
-      // 1. Insert into Supabase coin_transactions table
-      const { data: insData, error: insError } = await client.from('coin_transactions').insert([newTxData]).select();
-      if (insError) {
-        console.warn('Supabase insert warning (table might need creation):', insError.message);
-      }
-
-      // 2. Update user profile balance in Supabase
-      const newCoinsTotal = balance.coins + totalCoinsToAdd;
-      const newSpentTotal = balance.total_spent + selectedPkg.price_usd;
-      await client.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        coins: newCoinsTotal,
-        bonus_coins: balance.bonus_coins + selectedPkg.bonus,
-        total_spent: newSpentTotal
-      });
-
-      setBalance(prev => ({ ...prev, coins: newCoinsTotal, total_spent: newSpentTotal }));
-
-      // 3. Dispatch to Actual Supplier API (Fulfillment)
-      try {
-        const supplierRes = await fetch(supplierApiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supplierApiKey}`
-          },
-          body: JSON.stringify({
-            order_id: insData?.[0]?.id || 'ord_' + Date.now(),
-            tiktok_user: user.email,
-            coins: totalCoinsToAdd,
-            payment_ref: receiptRef,
-            timestamp: new Date().toISOString()
-          })
-        });
-        const supplierResult = await supplierRes.json().catch(() => ({ status: 'dispatched_successfully' }));
-        setDispatchStatus({ success: true, response: supplierResult });
-      } catch (suppErr) {
-        // Fallback simulation for offline supplier endpoint demo
-        setDispatchStatus({ success: true, response: { status: 'dispatched_to_supplier_api', timestamp: new Date().toISOString() } });
-      }
-
+      const { data, error } = await client.from('coin_transactions').insert([request]).select();
+      if (error) throw error;
       setCheckoutSuccess(true);
-      fetchTransactions(client, user.id);
-
+      await fetchTransactions(client, user.id);
       setTimeout(() => {
         setCheckoutSuccess(false);
         setSelectedPkg(null);
         setReceiptRef('');
         setProofImage('');
         setActiveTab('transactions');
-      }, 2500);
-
+      }, 2200);
     } catch (err: any) {
-      alert(err.message || 'Order processing error');
+      alert(err?.message || (lang === 'ar' ? 'تعذر إنشاء طلب المراجعة.' : 'Could not create the review request.'));
     } finally {
       setCheckoutLoading(false);
     }
-  };
-
-  return (
-    <div className={`min-h-screen bg-[#0b0b10] text-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+  };b0b10] text-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Top Bar */}
       <header className="sticky top-0 z-50 bg-[#12121a]/95 backdrop-blur-md border-b border-[#252535] px-4 lg:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -873,15 +826,15 @@ create table coin_transactions (
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <h3 className="text-2xl font-bold text-white">
-                  {lang === 'ar' ? 'تم إنشاء الطلب وإرساله للمورد بنجاح!' : 'Order Placed & Dispatched to Supplier!'}
+                  {lang === 'ar' ? 'تم إنشاء طلب الدفع وهو قيد المراجعة' : 'Payment request submitted for review'}
                 </h3>
                 <p className="text-sm text-zinc-300">
                   {lang === 'ar' 
-                    ? `تم حفظ الطلب في Supabase وإرسال ${(selectedPkg.coins + selectedPkg.bonus).toLocaleString()} عملة للمورد الفعلي.` 
-                    : `Order saved in Supabase and dispatched to supplier API successfully.`}
+                    ? `تم تسجيل طلبك للمراجعة. لن تُضاف العملات قبل تأكيد الدفع والتسليم.` 
+                    : `Your request is pending verification. Coins are not credited until payment and delivery are confirmed.`}
                 </p>
                 <div className="bg-emerald-950/40 border border-emerald-500/30 p-3 rounded-xl text-xs text-emerald-300 font-mono">
-                  ✓ Supabase DB Insert & Supplier API Dispatch Completed
+                  PENDING REVIEW — NO COINS CREDITED
                 </div>
               </div>
             ) : (
