@@ -25,7 +25,7 @@ function LoginForm() {
       : await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { emailRedirectTo: `${(process.env.NEXT_PUBLIC_SITE_URL || 'https://coin-center-pro.vercel.app').replace(/\\/$/, '')}/auth/callback?next=${encodeURIComponent(next)}` },
+          options: { emailRedirectTo: `${(process.env.NEXT_PUBLIC_SITE_URL || 'https://coin-center-pro.vercel.app').replace(/\/$/, '')}/auth/callback?next=${encodeURIComponent(next)}` },
         });
     setBusy(false);
     if (result.error) {
@@ -61,7 +61,6 @@ function LoginForm() {
     </main>
   );
 }
-
 
 export default function LoginPage() {
   return <Suspense fallback={<main className="site-shell" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center' }}>جارٍ التحميل…</main>}><LoginForm /></Suspense>;
