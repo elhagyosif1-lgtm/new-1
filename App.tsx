@@ -207,8 +207,6 @@ export default function App() {
         payment_method: paymentMethod,
         receipt_ref: receiptRef.trim(),
         proof_image: proofImage || null,
-        status: 'pending_review',
-        supplier_status: 'not_dispatched'
       };
       const { data, error } = await client.from('coin_transactions').insert([request]).select();
       if (error) throw error;
@@ -239,11 +237,11 @@ export default function App() {
                 TikTok Coin Center Pro
               </h1>
               <span className="bg-emerald-500/20 text-emerald-400 text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 border border-emerald-500/30">
-                <ShieldCheck className="w-3.5 h-3.5" /> Supabase + Supplier Active
+                <ShieldCheck className="w-3.5 h-3.5" /> Supabase Configured · Payments Pending
               </span>
             </div>
             <p className="text-xs text-zinc-400">
-              {lang === 'ar' ? 'ربط حقيقي 100% مع قاعدة بيانات Supabase والمورد الفعلي والدفع الآمن' : '100% Real Supabase DB, Authentication & Supplier Fulfillment'}
+              {lang === 'ar' ? 'طلبات الشحن لا تُعتمد إلا بعد مراجعة الدفع والتحقق من التسليم' : 'Supabase connection configured; payment and fulfillment require verification'}
             </p>
           </div>
         </div>
@@ -885,10 +883,10 @@ create table coin_transactions (
 
                 <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 text-xs text-zinc-300 space-y-1.5">
                   <div className="font-semibold text-white mb-1">
-                    {paymentMethod === 'vodafone_cash' ? 'رقم التحويل (Vodafone Cash):' : 'معرف انستاباي (InstaPay IPN):'}
+                    {paymentMethod === 'vodafone_cash' ? 'بيانات الدفع (Vodafone Cash):' : 'بيانات الدفع (InstaPay IPN):'}
                   </div>
                   <div className="font-mono text-cyan-300 font-bold text-sm bg-zinc-950 p-2 rounded border border-zinc-800 flex items-center justify-between">
-                    <span>{paymentMethod === 'vodafone_cash' ? '01012345678' : 'elhagyosif@instapay'}</span>
+                    <span>{paymentMethod === 'vodafone_cash' ? 'بيانات الدفع غير مفعّلة' : 'بيانات الدفع غير مفعّلة'}</span>
                     <button 
                       type="button"
                       onClick={() => navigator.clipboard.writeText(paymentMethod === 'vodafone_cash' ? '01012345678' : 'elhagyosif@instapay')}
