@@ -48,7 +48,7 @@ export default function Home() {
         </a>
         <div className="topbar-actions">
           <span className="secure-label"><i /> بيئة آمنة قيد التجهيز</span>
-          <button className="login-button" type="button" disabled>تسجيل الدخول قريباً</button>
+          <a className="login-button" href="/login">تسجيل الدخول</a>
         </div>
       </header>
 
