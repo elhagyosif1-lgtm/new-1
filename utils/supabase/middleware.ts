@@ -22,7 +22,7 @@ export async function updateSession(request: NextRequest) {
   const isProtected = request.nextUrl.pathname === "/account" || request.nextUrl.pathname.startsWith("/account/");
   const { data, error } = await supabase.auth.getClaims();
 
-  if (isProtected && (error || !data?.claims)) {
+  if (isProtected && (error || !data)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = "";
