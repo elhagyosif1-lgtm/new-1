@@ -185,8 +185,7 @@ export default function App() {
     }
   };
 
-  // Real purchase & Supplier fulfillment dispatch
-  const handlePurchase = async (e: React.FormEvent) =  // Create a pending payment request only. Never credit a wallet from a client-side receipt reference.
+  // Payment requests remain pending until a trusted server verifies payment and supplier fulfillment.
   const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPkg || !receiptRef.trim()) return;
@@ -206,9 +205,9 @@ export default function App() {
         amount_local: selectedPkg.price_egp,
         payment_method: paymentMethod,
         receipt_ref: receiptRef.trim(),
-        proof_image: proofImage || null,
+        proof_image: proofImage || null
       };
-      const { data, error } = await client.from('coin_transactions').insert([request]).select();
+      const { error } = await client.from('coin_transactions').insert([request]);
       if (error) throw error;
       setCheckoutSuccess(true);
       await fetchTransactions(client, user.id);
@@ -224,7 +223,10 @@ export default function App() {
     } finally {
       setCheckoutLoading(false);
     }
-  };b0b10] text-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+  };
+
+  return (
+    <div className={`min-h-screen bg-[#0b0b10] text-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Top Bar */}
       <header className="sticky top-0 z-50 bg-[#12121a]/95 backdrop-blur-md border-b border-[#252535] px-4 lg:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
